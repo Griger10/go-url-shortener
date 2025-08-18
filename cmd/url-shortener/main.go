@@ -4,6 +4,9 @@ import (
 	"log/slog"
 	"os"
 	"url-shortener/cmd/internal/config"
+	"url-shortener/cmd/internal/lib/logger/sl"
+	"url-shortener/cmd/internal/storage/sqlite"
+	_ "url-shortener/cmd/internal/storage/sqlite"
 )
 
 const (
@@ -17,7 +20,16 @@ func main() {
 
 	log := setupLogger(cfg.Env)
 
-	log.Info("Starting server...")
+	storage, err := sqlite.New(cfg.StoragePath)
+
+	if err != nil {
+		log.Error("Failed to init storage", sl.Err(err))
+		os.Exit(1)
+	}
+
+	_ = storage
+
+	log.Info("Starting server...", slog.String("env", cfg.Env))
 }
 
 func setupLogger(env string) *slog.Logger {
