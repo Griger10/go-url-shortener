@@ -1,9 +1,12 @@
 package main
 
 import (
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"os"
 	"url-shortener/cmd/internal/config"
+	"url-shortener/cmd/internal/http-server/middleware/logger"
 	"url-shortener/cmd/internal/lib/logger/sl"
 	"url-shortener/cmd/internal/storage/sqlite"
 	_ "url-shortener/cmd/internal/storage/sqlite"
@@ -29,6 +32,13 @@ func main() {
 
 	_ = storage
 
+	router := chi.NewRouter()
+
+	// middleware
+	router.Use(middleware.RequestID)
+	router.Use(logger.New(log))
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
 	log.Info("Starting server...", slog.String("env", cfg.Env))
 }
 
